@@ -21,11 +21,11 @@ email: <marcel.goldschen@gmail.com>
 import copy
 from datetime import datetime
 try:
-    from PyQt5.QtCore import Qt, QAbstractTableModel, QModelIndex
+    from PyQt5.QtCore import Qt, QAbstractTableModel, QModelIndex, QVariant, QT_VERSION_STR
     from PyQt5.QtWidgets import QTableView, QMenu, QInputDialog, QErrorMessage, QDialog, QDialogButtonBox, QVBoxLayout
 except ImportError:
     try:
-        from PyQt4.QtCore import Qt, QAbstractTableModel, QModelIndex
+        from PyQt4.QtCore import Qt, QAbstractTableModel, QModelIndex, QVariant, QT_VERSION_STR, QString
         from PyQt4.QtGui import QTableView, QMenu, QInputDialog, QErrorMessage, QDialog, QDialogButtonBox, QVBoxLayout
     except ImportError:
         raise ImportError("ObjectListTableModelViewQt: Requires PyQt5 or PyQt4.")
@@ -163,6 +163,10 @@ class ObjectListTableModelQt(QAbstractTableModel):
                 elif action == "fileDialog":
                     pass  # File loading handled via @property.setter obj.attr below. Otherwise just sets the file name text.
             if role == Qt.EditRole:
+                if type(value) == QVariant:
+                    value = value.toPyObject()
+                if (QT_VERSION_STR[0] == '4') and (type(value) == QString):
+                    value = str(value)
                 setAttrRecursive(obj, prop['attr'], value)
                 return True
         except:
@@ -590,6 +594,17 @@ if __name__ == "__main__":
         {'attr': "child.intValue", 'header': "Child Int Combo Box", 'choices': [42, 82]},
         {'attr': "floatValue",     'header': "Float Combo Box",     'choices': [('PI', 3.14), ('-PI', -3.14)]}]
 
+    # Print property names/values/types prior to editing.
+    print("---------- BEFORE EDITING ----------")
+    for obj in objects:
+        for prop in properties:
+            attr = prop['attr']
+            try:
+                value = getattr(obj, attr)
+                print(attr, value, type(value))
+            except:
+                pass
+
     # Create the model/view.
     model = ObjectListTableModelQt(objects, properties, isRowObjects=True, isDynamic=True, templateObject=MyObject())
     view = ObjectListTableViewQt(model)
@@ -597,4 +612,16 @@ if __name__ == "__main__":
     # Show the model/view and run the application.
     view.setAttribute(Qt.WA_DeleteOnClose)
     view.show()
-    sys.exit(app.exec_())
+    status = app.exec_()
+
+    # Print property names/values/types post editing.
+    print("---------- AFTER EDITING ----------")
+    for obj in objects:
+        for prop in properties:
+            attr = prop['attr']
+            try:
+                value = getattr(obj, attr)
+                print(attr, value, type(value))
+            except:
+                pass
+    sys.exit(status)

@@ -9,11 +9,11 @@ the model data reflects the values (e.g. MyObject instances).
 
 import copy
 try:
-    from PyQt5.QtCore import Qt
+    from PyQt5.QtCore import Qt, QVariant
     from PyQt5.QtWidgets import QStyledItemDelegate, QComboBox
 except ImportError:
     try:
-        from PyQt4.QtCore import Qt
+        from PyQt4.QtCore import Qt, QVariant
         from PyQt4.QtGui import QStyledItemDelegate, QComboBox
     except ImportError:
         raise ImportError("ComboBoxDelegateQt: Requires PyQt5 or PyQt4.")
@@ -85,7 +85,8 @@ class ComboBoxDelegateQt(QStyledItemDelegate):
         """ Show str rep of current choice (or choice key if choice is a (key, value) tuple).
         """
         try:
-            value = value.toPyObject()  # QVariant ==> object
+            if type(value) == QVariant:
+                value = value.toPyObject()  # QVariant ==> object
             for choice in self.choices:
                 if (type(choice) is tuple) and (len(choice) == 2):
                     # choice is a (key, value) tuple.
