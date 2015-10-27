@@ -1,4 +1,4 @@
-# ModelViewQt
+# ModelViewPyQt
 
 A collection of [PyQt](https://www.riverbankcomputing.com/software/pyqt/intro) (version 4 or 5) model/view interfaces. I plan on adding models/views (and their delegates) as they are needed for other projects.
 
